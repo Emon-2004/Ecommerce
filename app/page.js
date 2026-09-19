@@ -5,6 +5,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     fetch("/api/products")
@@ -23,11 +24,16 @@ export default function Home() {
       });
   }, []);
 
+  const filtered = products.filter((p) =>
+    p.title?.toLowerCase().includes(query.toLowerCase()) ||
+    p.category?.toLowerCase().includes(query.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-500 text-sm font-medium">Loading products…</p>
         </div>
       </div>
@@ -46,33 +52,54 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-200">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">🛍️ Shop</h1>
-          <span className="text-sm text-gray-500">{products.length} products</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">🛍️ Shop</h1>
+            <span className="text-sm text-gray-500">{filtered.length} products</span>
+          </div>
+
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products..."
+              className="flex-1 sm:w-64 border border-gray-300 rounded-md py-2 px-4 text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            />
+            <button
+              onClick={() => setQuery("")}
+              className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition-colors duration-150 cursor-pointer"
+            >
+              {query ? "Clear" : "Search"}
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Product Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {products.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-gray-400">
             <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9M9 21h6" />
             </svg>
-            <p className="text-lg font-medium">No products found</p>
+            <p className="text-lg font-medium">
+              {query ? `No results for "${query}"` : "No products found"}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {filtered.map((product) => (
               <div
                 key={product._id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col group"
               >
                 {/* Product Image */}
-                <div className="relative w-full h-52 bg-gray-100 overflow-hidden cursor-pointer">  // TODO: Adding the cursor
+                <div className="relative w-full h-52 bg-gray-100 overflow-hidden cursor-pointer">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -92,7 +119,7 @@ export default function Home() {
                 <div className="flex flex-col flex-1 p-4 gap-2">
                   {/* Category Badge */}
                   {product.category && (
-                    <span className="self-start text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <span className="self-start text-xs font-semibold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
                       {product.category}
                     </span>
                   )}
@@ -114,7 +141,7 @@ export default function Home() {
                     <span className="text-lg font-bold text-gray-900">
                       ${product.price?.toFixed(2)}
                     </span>
-                    <button className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-150">
+                    <button className="bg-pink-500 hover:bg-pink-700 active:scale-95 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-150 cursor-pointer">
                       Add to Cart
                     </button>
                   </div>
